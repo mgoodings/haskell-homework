@@ -40,12 +40,13 @@ spec = do
             LogMessage Warning 2 "def"
           ]
 
-  {-
   describe "Exercise 3" $ do
     context "parse" $ do
-      it "testParse parse 10 \"error.log\"" $ do
-        testParse parse 10 "error.log"
-  -}
+      it "head (parse (\"sample.log\")) == (LogMessage Info 6 \"Completed armadillo processing\")" $ do
+        head (readLogMessages "sample.log") `shouldBe` (LogMessage Info 6 "Completed armadillo processing")
+
+      it "length (parse (\"sample.log\")) == 11" $ do
+        length (readLogMessages "sample.log") `shouldBe` 11
 
   describe "Exercise 4" $ do
     context "compareMsgs" $ do
@@ -65,14 +66,17 @@ spec = do
           (LogMessage Info 2001 "Daisy, Daisy, give me your answer do.")
         `shouldBe` EQ
 
-  {-
   describe "Exercise 5" $ do
     context "sortMessages" $ do
-  -}
+      it "head (sortMessages (\"sample.log\")) == (LogMessage Info 1 \"Nothing to report\")" $ do
+        head (sortMessages (readLogMessages "sample.log")) `shouldBe` (LogMessage Info 1 "Nothing to report")
+
+      it "last (sortMessages (\"sample.log\")) == (LogMessage Info 11 \"Initiating self-destruct sequence\")" $ do
+        last (sortMessages (readLogMessages "sample.log")) `shouldBe` (LogMessage Info 11 "Initiating self-destruct sequence")
 
   describe "Exercise 6" $ do
     context "whatWentWrong" $ do
-      it "whatWentWrong \"sample.log\" == [\
+      it "whatWentWrong (\"sample.log\") == [\
           \\"Way too many pickles\",\
           \\"Bad pickle-flange interaction detected\",\
           \\"Flange failed!\"\
@@ -103,7 +107,7 @@ spec = do
 
   describe "Exercise 8" $ do
     context "whatWentWrongEnhanced" $ do
-      it "whatWentWrongEnhanced \"pickle\" \"sample.log\" == [\
+      it "whatWentWrongEnhanced \"pickle\" (\"sample.log\") == [\
         \\"Way too many pickles\",\
         \\"Bad pickle-flange interaction detected\"\
       \]" $ do
@@ -112,7 +116,7 @@ spec = do
             "Bad pickle-flange interaction detected"
           ]
 
-      it "whatWentWrongEnhanced \"garbage\" \"sample.log\" == []" $ do
+      it "whatWentWrongEnhanced \"garbage\" (\"sample.log\") == []" $ do
         whatWentWrongEnhanced "garbage" (readLogMessages "sample.log") `shouldBe` []
 
 main :: IO ()
