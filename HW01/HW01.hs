@@ -1,12 +1,4 @@
-{-
-Name: Miles Goodings
-Collaborators: None
-Notes: I'm bad at this
--}
-
 module HW01 where
-
-{- Exercise 1 -}
 
 lastDigit :: Integer -> Integer
 lastDigit x = x `mod` 10
@@ -14,48 +6,38 @@ lastDigit x = x `mod` 10
 dropLastDigit :: Integer -> Integer
 dropLastDigit x = x `div` 10
 
-{- Exercise 2 -}
-
 toDigits :: Integer -> [Integer]
 toDigits x
-    | x <= 0 = []                                         -- If x is less than or equal to 0, return empty list
-    | otherwise = toDigits (dropLastDigit x) ++ [lastDigit x]
-
-{- Exercise 3 -}
+  | x <= 0 = []
+  | otherwise = toDigits (dropLastDigit x) ++ [lastDigit x]
 
 doubleEveryOther :: [Integer] -> [Integer]
-doubleEveryOther x = reverse (doubleEveryOtherRev (reverse x))
-
-doubleEveryOtherRev :: [Integer] -> [Integer]
-doubleEveryOtherRev [] = []                                -- If list is empty, return empty list
-doubleEveryOtherRev (x:[]) = [x]                           -- If list has single element, return it
-doubleEveryOtherRev (x:y:zs) = x : (y * 2) : doubleEveryOtherRev zs
-
-{- Exercise 4 -}
+doubleEveryOther x = reverse (doubleEveryOther' (reverse x)) where
+  doubleEveryOther' :: [Integer] -> [Integer]
+  doubleEveryOther' [] = []
+  doubleEveryOther' (x:[]) = [x]
+  doubleEveryOther' (x:y:zs) = x : (y * 2) : doubleEveryOther' zs
 
 sumDigits :: [Integer] -> Integer
-sumDigits [] = 0                                          -- If list is empty, return 0
-sumDigits (x:xs) = sumDigitsOne x + sumDigits xs
-
-sumDigitsOne :: Integer -> Integer
-sumDigitsOne x
-    | x <= 0 = 0                                          -- If x is less than or equal to 0, return 0
-    | otherwise = lastDigit x + sumDigitsOne (dropLastDigit x)
-
-{- Exercise 5 -}
+sumDigits xs = sum (concatMap toDigits xs)
 
 validate :: Integer -> Bool
-validate x = lastDigit (getChecksum x) == 0
-
-getChecksum :: Integer -> Integer
-getChecksum x = sumDigits (doubleEveryOther (toDigits x))
-
-{- Exercise 6 -}
+validate x = lastDigit (getChecksum x) == 0 where
+  getChecksum :: Integer -> Integer
+  getChecksum x = sumDigits (doubleEveryOther (toDigits x))
 
 type Peg = String
 type Move = (Peg, Peg)
+
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
-hanoi n start end middle
-  | n == 0 = []                                        -- If n is 0 return empty list
-  | n == 1 = [(start, end)]                            -- If n is one, return Move of start and end
-  | otherwise = (hanoi (n - 1) start middle end) ++ [(start, end)] ++ (hanoi (n - 1) middle start end)
+hanoi 0 _ _ _ = []
+hanoi 1 p1 p2 _ = [(p1, p2)]
+hanoi n p1 p2 p3 =
+  hanoi (n - 1) p1 p3 p2 ++ [(p1, p2)] ++ hanoi (n - 1) p3 p2 p1
+
+hanoi4 :: Integer -> Peg -> Peg -> Peg -> Peg -> [Move]
+hanoi4 0 _ _ _ _ = []
+hanoi4 1 p1 p2 _ _ = [(p1, p2)]
+hanoi4 n p1 p2 p3 r =
+  hanoi4 k p1 p3 p2 r ++ hanoi (n - k) p1 p2 r ++ hanoi4 k p3 p2 p1 r
+  where k = n `div` 2
