@@ -47,33 +47,31 @@ scrabbleValueWord (w:word) = scrabbleValue w + scrabbleValueWord word
 
 bestWords :: [String] -> [String]
 bestWords [] = []
-bestWords words = bestWordsAcc 0 [] words where
-  bestWordsAcc :: Int -> [String] -> [String] -> [String]
-  bestWordsAcc _ topWords [] = topWords
-  bestWordsAcc best topWords (word:words)
-    | score > best = bestWordsAcc score [word] words
-    | score == best = bestWordsAcc score (word : topWords) words
-    | otherwise = bestWordsAcc best topWords words
+bestWords words = findBestWords words 0 [] where
+  findBestWords :: [String] -> Int -> [String] -> [String]
+  findBestWords [] _ topWords = topWords
+  findBestWords (word:words) bestScore topWords
+    | score > bestScore = findBestWords words score [word]
+    | score == bestScore = findBestWords words score (word : topWords)
+    | otherwise = findBestWords words bestScore topWords
     where score = scrabbleValueWord word
 
 {- Exercise 7 -}
 
 scrabbleValueTemplate :: STemplate -> String -> Int
 scrabbleValueTemplate stpl word = scrabbleValueStpl stpl word 0 1 where
-  stplScore :: Char -> Char -> Int
-  stplScore s w
-    | s == 'D' = value * 2
-    | s == 'T' = value * 3
-    | otherwise = value
-    where value = scrabbleValue w
+  stplScore :: Char -> Int -> Int
+  stplScore 'D' x = x * 2
+  stplScore 'T' x = x * 3
+  stplScore _ x = x
 
-  stplMultiplier :: Char -> Int -> Int
-  stplMultiplier s multiplier
-    | s == '2' = multiplier * 2
-    | s == '3' = multiplier * 3
-    | otherwise = multiplier
+  stplMulti :: Char -> Int -> Int
+  stplMulti '2' multi = multi * 2
+  stplMulti '3' multi = multi * 3
+  stplMulti _ multi = multi
 
   scrabbleValueStpl :: STemplate -> String -> Int -> Int -> Int
-  scrabbleValueStpl [] [] score multiplier = score * multiplier
-  scrabbleValueStpl (s:stpl) (w:word) score multiplier =
-    scrabbleValueStpl stpl word (score + (s `stplScore` w)) (s `stplMultiplier` multiplier)
+  scrabbleValueStpl [] [] score multi = score * multi
+  scrabbleValueStpl (s:stpl) (w:word) score multi =
+    scrabbleValueStpl stpl word (score + s `stplScore` value) (s `stplMulti` multi)
+    where value = scrabbleValue w
