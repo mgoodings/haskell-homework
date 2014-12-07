@@ -12,7 +12,7 @@ type STemplate = Template
 formableBy :: String -> Hand -> Bool
 formableBy [] _ = True
 formableBy (w:word) hand
-  | w `elem` hand = formableBy word (w `delete` hand)
+  | elem w hand = formableBy word $ delete w hand
   | otherwise = False
 
 {- Exercise 2 -}
@@ -27,9 +27,10 @@ wordFitsTemplate [] _ [] = True
 wordFitsTemplate [] _ _ = False
 wordFitsTemplate _ _ [] = False
 wordFitsTemplate (t:tpl) hand (w:word)
-  | t == '?' && (formableBy [w] hand) = wordFitsTemplate tpl hand word
-  | t == w = wordFitsTemplate tpl hand word
+  | t == '?' && formableBy [w] hand = fn
+  | t == w = fn
   | otherwise = False
+  where fn = (wordFitsTemplate tpl hand word)
 
 {- Exercise 4 -}
 
@@ -41,37 +42,27 @@ wordsFittingTemplate tpl hand = filter (\word -> wordFitsTemplate tpl hand word)
 
 scrabbleValueWord :: String -> Int
 scrabbleValueWord [] = 0
-scrabbleValueWord (w:word) = scrabbleValue w + scrabbleValueWord word
+scrabbleValueWord word = sum $ map scrabbleValue word
 
 {- Exercise 6 -}
 
 bestWords :: [String] -> [String]
 bestWords [] = []
-bestWords words = findBestWords words 0 [] where
-  findBestWords :: [String] -> Int -> [String] -> [String]
-  findBestWords [] _ topWords = topWords
-  findBestWords (word:words) bestScore topWords
-    | score > bestScore = findBestWords words score [word]
-    | score == bestScore = findBestWords words score (word : topWords)
-    | otherwise = findBestWords words bestScore topWords
-    where score = scrabbleValueWord word
+bestWords words = filter (\word -> scrabbleValueWord word == topScore) $ reverse words where
+  topScore = maximum $ map scrabbleValueWord words
 
 {- Exercise 7 -}
 
 scrabbleValueTemplate :: STemplate -> String -> Int
-scrabbleValueTemplate stpl word = scrabbleValueStpl stpl word 0 1 where
-  stplScore :: Char -> Int -> Int
-  stplScore 'D' x = x * 2
-  stplScore 'T' x = x * 3
-  stplScore _ x = x
+scrabbleValueTemplate stpl word = sum (zipWith letterScore stpl scores) * product (map letterMulti stpl) where
+  scores = map scrabbleValue word
 
-  stplMulti :: Char -> Int -> Int
-  stplMulti '2' multi = multi * 2
-  stplMulti '3' multi = multi * 3
-  stplMulti _ multi = multi
+  letterScore :: Char -> Int -> Int
+  letterScore 'D' x = x * 2
+  letterScore 'T' x = x * 3
+  letterScore _ x = x
 
-  scrabbleValueStpl :: STemplate -> String -> Int -> Int -> Int
-  scrabbleValueStpl [] [] score multi = score * multi
-  scrabbleValueStpl (s:stpl) (w:word) score multi =
-    scrabbleValueStpl stpl word (score + s `stplScore` value) (s `stplMulti` multi)
-    where value = scrabbleValue w
+  letterMulti :: Char -> Int
+  letterMulti '2' = 2
+  letterMulti '3' = 3
+  letterMulti _ = 1
